@@ -33,12 +33,20 @@ const PUERTO = 3000
 //Se crea la instancia de la conexion a Base de datos
 const conexion = mysql.createConnection(
     {
-        host: 'localhost',
+        // host: 'localhost',
+        // //nombre de la base de datos
+        // database: 'proyecto',
+        // //credenciales de mysql
+        // user:'root',
+        // password:'123456'
+
+        host: 'junction.proxy.rlwy.net',
         //nombre de la base de datos
         database: 'proyecto',
         //credenciales de mysql
         user:'root',
-        password:'123456'
+        password:'fnWqiRLIsFfyhrUzulEvxrsTQXQsAKWf',
+        port: 19982
     }
 )
 
