@@ -1,5 +1,6 @@
 const md5 = require('md5');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 
 const cors= require('cors');
 //Creacion de la API
@@ -27,6 +28,7 @@ app.use(bodyParser.json())
 
 //Se configura el puerto a utilizar
 const PUERTO = 3000
+//const PUERTO = process.env.PORT || 3000
 
 //Se crea la instancia de la conexion a Base de datos
 const conexion = mysql.createConnection(
@@ -37,7 +39,7 @@ const conexion = mysql.createConnection(
         //credenciales de mysql
         user:'root',
         password:'123456'
-    }
+    }
 )
 
 //Puerto a utilizar y se muestra mensaje de ejecución
@@ -47,7 +49,7 @@ app.listen(PUERTO, () => {
 
 //Verificar que la conexión sea exitosa
 conexion.connect(error =>{
-    if (error) throw error
+    if (error){ throw new Error(error.message)}
     console.log('Conexión exitosa a la BD')
 })
 
@@ -607,109 +609,109 @@ app.delete('/experiencias/:id',(req, res) => {
     })
 })
 
-// ---------------------------Itinerarios------------------------------------------------------
+// // ---------------------------Itinerarios------------------------------------------------------
 
-//End point para obtener todos los itinerarios
-app.get('/itinerarios', (req, res) => {
-    const query = `SELECT itinerarios.iditinerario, itinerarios.nombre, 
-                  actividades.idactividades, actividades.actividad, actividades.dia, actividades.hora
-                  FROM itinerarios INNER JOIN actividades ON itinerarios.iditinerario = actividades.iditinerario`;
+// //End point para obtener todos los itinerarios
+// app.get('/itinerarios', (req, res) => {
+//     const query = `SELECT itinerarios.iditinerario, itinerarios.nombre, 
+//                   actividades.idactividades, actividades.actividad, actividades.dia, actividades.hora
+//                   FROM itinerarios INNER JOIN actividades ON itinerarios.iditinerario = actividades.iditinerario`;
 
-    conexion.query(query, (error, resultado) => {
-        if (error) {
-            console.error(error.message);
-            return res.status(500).json({ error: 'Error al obtener el itinerario' });
-        }
-        res.json(resultado);
-    });
-});
-
-
-//End point para obtener todos los itinerarios por id
-app.get('/itinerarios/:iditinerario', (req, res) => {
-    const iditinerario = req.params.iditinerario
-    const query = `SELECT itinerarios.iditinerario, itinerarios.nombre, 
-                  actividades.idactividades, actividades.actividad, actividades.dia, actividades.hora
-                  FROM itinerarios INNER JOIN actividades ON itinerarios.iditinerario = actividades.iditinerario
-                  WHERE itinerarios.iditinerario = ?`;
-
-    conexion.query(query, iditinerario, (error, resultado) => {
-        if (error) {
-            console.error(error.message);
-            return res.status(500).json({ error: 'Error al obtener el itinerario' });
-        }
-        res.json(resultado);
-    });
-});
+//     conexion.query(query, (error, resultado) => {
+//         if (error) {
+//             console.error(error.message);
+//             return res.status(500).json({ error: 'Error al obtener el itinerario' });
+//         }
+//         res.json(resultado);
+//     });
+// });
 
 
-//End point para agregar un itinerario
-app.post('/itinerarios', (req, res) => {
-    const itinerario = {nombre: req.body.nombre}
-    const actividades = req.body.actividades
+// //End point para obtener todos los itinerarios por id
+// app.get('/itinerarios/:iditinerario', (req, res) => {
+//     const iditinerario = req.params.iditinerario
+//     const query = `SELECT itinerarios.iditinerario, itinerarios.nombre, 
+//                   actividades.idactividades, actividades.actividad, actividades.dia, actividades.hora
+//                   FROM itinerarios INNER JOIN actividades ON itinerarios.iditinerario = actividades.iditinerario
+//                   WHERE itinerarios.iditinerario = ?`;
 
-    const query = `INSERT INTO itinerarios (nombre) VALUES ('${itinerario.nombre}')`
-    conexion.query(query, itinerario, (error, resultado) => {
+//     conexion.query(query, iditinerario, (error, resultado) => {
+//         if (error) {
+//             console.error(error.message);
+//             return res.status(500).json({ error: 'Error al obtener el itinerario' });
+//         }
+//         res.json(resultado);
+//     });
+// });
 
-        if(error) return console.error(error.message)
+
+// //End point para agregar un itinerario
+// app.post('/itinerarios', (req, res) => {
+//     const itinerario = {nombre: req.body.nombre}
+//     const actividades = req.body.actividades
+
+//     const query = `INSERT INTO itinerarios (nombre) VALUES ('${itinerario.nombre}')`
+//     conexion.query(query, itinerario, (error, resultado) => {
+
+//         if(error) return console.error(error.message)
             
-            console.log(resultado)
+//             console.log(resultado)
 
-            actividades.forEach(actividad => {
-                const query = `INSERT INTO actividades (actividad, dia, hora, iditinerario) VALUES ('${actividad.actividad}',
-                '${actividad.dia}','${actividad.hora}',${resultado.insertId})`
+//             actividades.forEach(actividad => {
+//                 const query = `INSERT INTO actividades (actividad, dia, hora, iditinerario) VALUES ('${actividad.actividad}',
+//                 '${actividad.dia}','${actividad.hora}',${resultado.insertId})`
                 
-                conexion.query(query, (error, resultado) => {
-                    if(error) return console.error(error.message)
-                });
+//                 conexion.query(query, (error, resultado) => {
+//                     if(error) return console.error(error.message)
+//                 });
 
-            });
-        res.json('Se inserto correctamente el itinerario')
+//             });
+//         res.json('Se inserto correctamente el itinerario')
 
-    })
-})
+//     })
+// })
 
-//End point para actualizar un itinerario
-app.patch('/itinerarios/:iditinerario', (req, res) => {
-    const iditinerario = req.params.iditinerario;
-    const itinerario = { nombre: req.body.nombre };
-    const actividades = req.body.actividades;
+// //End point para actualizar un itinerario
+// app.patch('/itinerarios/:iditinerario', (req, res) => {
+//     const iditinerario = req.params.iditinerario;
+//     const itinerario = { nombre: req.body.nombre };
+//     const actividades = req.body.actividades;
 
-    const queryItinerario = `UPDATE itinerarios SET nombre='${itinerario.nombre}' WHERE iditinerario=${iditinerario}`;
-    conexion.query(queryItinerario, (error, resultado) => {
-        if (error) {
-            return console.error(error.message);
-        }
-        console.log(resultado);
+//     const queryItinerario = `UPDATE itinerarios SET nombre='${itinerario.nombre}' WHERE iditinerario=${iditinerario}`;
+//     conexion.query(queryItinerario, (error, resultado) => {
+//         if (error) {
+//             return console.error(error.message);
+//         }
+//         console.log(resultado);
 
-        actividades.forEach(actividad => {
-            const queryActividad = `UPDATE actividades SET actividad='${actividad.actividad}', dia='${actividad.dia}', 
-            hora='${actividad.hora}' WHERE idactividades=${actividad.idactividades} AND iditinerario=${iditinerario}`;
-            conexion.query(queryActividad, (error, resultado) => {
-                if (error) {
-                    return console.error(error.message);
-                }
-            });
-        });
+//         actividades.forEach(actividad => {
+//             const queryActividad = `UPDATE actividades SET actividad='${actividad.actividad}', dia='${actividad.dia}', 
+//             hora='${actividad.hora}' WHERE idactividades=${actividad.idactividades} AND iditinerario=${iditinerario}`;
+//             conexion.query(queryActividad, (error, resultado) => {
+//                 if (error) {
+//                     return console.error(error.message);
+//                 }
+//             });
+//         });
 
-        res.json('Se actualizó correctamente el itinerario');
-    });
-});
+//         res.json('Se actualizó correctamente el itinerario');
+//     });
+// });
 
 
-//End point para borrar un itinerario por id
-app.delete('/itinerarios/:iditinerario', (req, res) => {
-    const { iditinerario } = req.params;
+// //End point para borrar un itinerario por id
+// app.delete('/itinerarios/:iditinerario', (req, res) => {
+//     const { iditinerario } = req.params;
 
-    const query = 'DELETE FROM itinerarios WHERE iditinerario = ?';
-    conexion.query(query, iditinerario, (error) => {
-        console.error(error?.message);
-        res.status(error ? 500 : 200).json(
-            error ? { error: 'Error al eliminar el itinerario' } :
-            { message: 'Se eliminó correctamente el itinerario' }
-        );
-    });
-});
+//     const query = 'DELETE FROM itinerarios WHERE iditinerario = ?';
+//     conexion.query(query, iditinerario, (error) => {
+//         console.error(error?.message);
+//         res.status(error ? 500 : 200).json(
+//             error ? { error: 'Error al eliminar el itinerario' } :
+//             { message: 'Se eliminó correctamente el itinerario' }
+//         );
+//     });
+// });
 
 
 
@@ -838,28 +840,361 @@ app.post('/registro', (req, res) => {
 
 //--------------Login-----------------
 app.post('/login', (req, res) => {
-    const{ usuario, pass } = req.body
-    const query = `Select * from usuarios where usuario='${usuario}'`
+    const { usuario, pass } = req.body;
+    const query = `SELECT * FROM usuarios WHERE usuario='${usuario}'`;
+
     conexion.query(query, (error, resultado) => {
-        if(error) return console.error(error.message)
-        if(resultado.length > 0){
-            console.log(usuario)
-            const passEncriptada = md5(pass)
-            if(passEncriptada === resultado[0].pass){
-                //token
+        if (error) {
+            console.error(error.message);
+            return res.status(500).json({ autenticado: false, mensaje: 'Error en el servidor' });
+        }
+
+        if (resultado.length > 0) {
+            console.log(usuario);
+            const passEncriptada = md5(pass);
+
+            if (passEncriptada === resultado[0].pass) {
+                // Aquí obtienes el idUsuario
+                const idUsuario = resultado[0].idUsuario;
+
+                // Crear el payload incluyendo el idUsuario
                 const payload = {
+                    idUsuario: idUsuario,
                     usuario: resultado[0].usuario,
                     email: resultado[0].email
-                }
-                //firmar el token
-                const token = jwt.sign(payload, 'hola')
-                res.json({autenticado:true, token:token})
+                };
 
-            }else{
-                res.json({autenticado:false, token:null})
+                // Firmar el token
+                const token = jwt.sign(payload, 'hola');
+
+                // Devolver la respuesta con el token y el idUsuario
+                res.json({
+                    autenticado: true,
+                    token: token,
+                    userId: idUsuario // Devolver el id del usuario autenticado
+                });
+
+            } else {
+                res.json({ autenticado: false, token: null });
             }
+        } else {
+            res.json({ autenticado: false, token: null });
+        }
+    });
+});
+
+//-------------------------Itinerarios 2.0------------------------
+//End point para obtener todos los itinerarios
+app.get('/itinerarios',(req,res) => {
+    //crear la consulta sql
+    const query = 'SELECT * from itinerarios'
+    //se pasa la consulta a la conexion
+    conexion.query(query, (error,resultado) => {
+        //si hay un error muestra en consola el error
+        if (error) return console.error(error.message)
+        //si el resultado es mayor que 0 se tienen los registros
+        //y envia en formato json el resultado
+        if (resultado.length > 0){
+            res.json(resultado)
         }else{
-            res.json({autenticado:false, token:null})
+            res.json('No hay registros')
         }
     })
+})
+
+//End point para obtener todos los itinerarios por id
+app.get('/itinerarios/:id',(req, res)=>{
+    //se desestructura el id de los parametros
+    const { id } = req.params
+    //consulta sql
+    const query = `SELECT * FROM itinerarios WHERE id=${id}`
+
+    conexion.query(query, (error, resultado) => {
+        if (error) return console.error(error.message)
+
+        if(resultado.length > 0){
+            res.json(resultado[0])
+        }else{
+            res.json('No hay registros con el id')
+        }
+    })
+})
+
+//End point para obtener agregar un itinerario
+app.post('/itinerarios', (req, res) => {
+    const itinerario = {
+        nombre: req.body.nombre,
+        dia_1: req.body.dia_1,
+        actividades_dia_1: req.body.actividades_dia_1,
+        dia_2: req.body.dia_2,
+        actividades_dia_2: req.body.actividades_dia_2,
+        dia_3: req.body.dia_3,
+        actividades_dia_3: req.body.actividades_dia_3,
+        dia_4: req.body.dia_4,
+        actividades_dia_4: req.body.actividades_dia_4
+    }
+
+    const query = `INSERT INTO itinerarios SET ?`
+    conexion.query(query, itinerario, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        res.json('Se inserto correctamente el itinerario')
+
+    })
+})
+
+//End point para actualizar un itinerario
+app.patch('/itinerarios/:id',(req, res) =>{
+    const { id } = req.params
+    const itinerario = {
+        nombre: req.body.nombre,
+        dia_1: req.body.dia_1,
+        actividades_dia_1: req.body.actividades_dia_1,
+        dia_2: req.body.dia_2,
+        actividades_dia_2: req.body.actividades_dia_2,
+        dia_3: req.body.dia_3,
+        actividades_dia_3: req.body.actividades_dia_3,
+        dia_4: req.body.dia_4,
+        actividades_dia_4: req.body.actividades_dia_4
+    }
+    const query = `UPDATE itinerarios SET 
+    nombre='${itinerario.nombre}',
+    dia_1='${itinerario.dia_1}',
+    actividades_dia_1='${itinerario.actividades_dia_1}',
+    dia_2='${itinerario.dia_2}',
+    actividades_dia_2='${itinerario.actividades_dia_2}',
+    dia_3='${itinerario.dia_3}',
+    actividades_dia_3='${itinerario.actividades_dia_3}',
+    dia_4='${itinerario.dia_4}',
+    actividades_dia_4='${itinerario.actividades_dia_4}'
+    WHERE id=${id}`
+    conexion.query(query, (error, resultado) => {
+        if(error) return console.error(error.message)
+
+        res.json('Se actualizó correctamente el itinerario')
+        console.log(resultado)
+    })  
+})
+
+//End point para borrar un itinerario por id
+app.delete('/itinerarios/:id',(req, res) => {
+    const { id } = req.params
+
+    const query = `DELETE FROM itinerarios WHERE id=${id}`
+    conexion.query(query, (error, resultado) =>{
+        if(error) return console.error(error.message)
+        
+        res.json('Se eliminó correctamente el itinerario')
+        console.log(res)
+        
+    })
 });
+
+
+//----------------------EMAIL_______________
+app.post('/api/email', async (req, res) => {
+    try {
+      const { nombre, correo, telefono, dias, noches, adultos, ninos, fechaInicial, transporte, hoteles, restaurantes, atractivos, agenciaCorreo } = req.body;
+  
+      if (!agenciaCorreo) {
+        return res.status(400).send('Por favor, seleccione una agencia antes de enviar el formulario.');
+      }
+  
+      console.log('Datos recibidos:', req.body);
+  
+      const mailOptions = {
+        from: 'explora.dolores.hidalgo@gmail.com',
+        to: agenciaCorreo,
+        subject: 'Solicitud de Paquete Turístico Personalizado',
+        text: `
+          Información de Contacto:
+          Nombre: ${nombre || 'No se proporcionó nombre'}
+          Correo: ${correo || 'No se proporcionó correo'}
+          Teléfono: ${telefono || 'No se proporcionó teléfono'}
+  
+          Detalles del Paquete:
+          Días: ${dias || 'No se proporcionó cantidad de días'}
+          Noches: ${noches || 'No se proporcionó cantidad de noches'}
+          Adultos: ${adultos || 'No se proporcionó cantidad de adultos'}
+          Niños: ${ninos || 'No se proporcionó cantidad de niños'}
+          Fecha Inicial: ${fechaInicial || 'No se proporcionó fecha inicial'}
+          Transporte: ${transporte || 'No se proporcionó información de transporte'}
+  
+          Hoteles Seleccionados: ${hoteles && hoteles.length ? hoteles.map(h => h.nombre).join(', ') : 'No se proporcionaron hoteles'}
+          Restaurantes Seleccionados: ${restaurantes && restaurantes.length ? restaurantes.map(r => r.nombre).join(', ') : 'No se proporcionaron restaurantes'}
+          Atractivos Seleccionados: ${atractivos && atractivos.length ? atractivos.map(a => a.nombre).join(', ') : 'No se proporcionaron atractivos'}
+        `
+      };
+  
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'explora.dolores.hidalgo@gmail.com',
+          pass: 'mzvyaekzrgbzjvyp' // Nueva contraseña de aplicación
+        }
+      });
+  
+      transporter.verify((error, success) => {
+        if (error) {
+          console.error('Error al verificar la configuración del transportador:', error);
+        } else {
+          console.log('Configuración del transportador verificada con éxito');
+        }
+      });
+  
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error('Error al enviar el correo:', error);
+          return res.status(500).send('Error al enviar el correo');
+        }
+        console.log('Correo enviado con éxito:', info.response);
+        res.status(200).json({ message: 'Correo enviado con éxito' });
+      });
+    } catch (err) {
+      console.error('Error en el servidor:', err);
+      res.status(500).send('Error en el servidor');
+    }
+  });
+
+
+  // Endpoint para guardar la ubicación del usuario
+  app.post('/save-location', (req, res) => {
+    const { userId, lat, lng } = req.body;
+
+    // Aquí deberías hacer la lógica para guardar la ubicación en tu base de datos
+    const query = 'INSERT INTO ubicaciones (idUsuario, latitud, longitud) VALUES (?, ?, ?)';
+    const values = [userId, lat, lng];
+
+    conexion.query(query, values, (error, result) => {
+        if (error) {
+            console.error('Error al guardar la ubicación', error);
+            return res.status(500).json({ success: false, message: 'Error al guardar la ubicación' });
+        }
+        res.json({ success: true, message: 'Ubicación guardada' });
+    });
+});
+
+  
+  // Endpoint para obtener la última ubicación de un usuario
+  app.get('/get-location/:idUsuario', (req, res) => {
+    const idUsuario = req.params.idUsuario;
+    
+    const sql = 'SELECT latitud, longitud FROM Ubicaciones WHERE idUsuario = ? ORDER BY fecha DESC LIMIT 1';
+    conexion.query(sql, [idUsuario], (err, results) => {
+      if (err) {
+        console.error('Error al obtener la ubicación:', err);
+        return res.status(500).send(err);
+      }
+      res.status(200).json(results[0] || {});
+    });
+  });
+  
+  // Endpoint para obtener la ubicación de todos los usuarios
+  app.get('/get-all-locations', (req, res) => {
+    const sql = 'SELECT * FROM Ubicaciones';
+    conexion.query(sql, (err, results) => {
+      if (err) {
+        return res.status(500).send(err);
+      }
+      res.status(200).json(results);
+    });
+  });
+
+  app.put('/update-location/:idUsuario', (req, res) => {
+    const { idUsuario } = req.params;
+    const { latitud, longitud } = req.body;
+  
+    // Verificar si se recibieron latitud y longitud
+    if (latitud == null || longitud == null) {
+      return res.status(400).send('Latitud y longitud son requeridas');
+    }
+  
+    const sql = `
+      UPDATE Ubicaciones 
+      SET latitud = ?, longitud = ?, fecha = NOW()
+      WHERE idUsuario = ?
+    `;
+  
+    conexion.query(sql, [latitud, longitud, idUsuario], (err, results) => {
+      if (err) {
+        return res.status(500).send(err);
+      }
+  
+      // Verificar si se actualizó alguna fila
+      if (results.affectedRows === 0) {
+        return res.status(404).send('Usuario no encontrado');
+      }
+  
+      res.status(200).send('Ubicación actualizada correctamente');
+    });
+  });
+  
+  app.get('/users', (req, res) => {
+    const sql = 'SELECT idUsuario, nombre FROM Usuarios';
+    conexion.query(sql, (err, result) => {
+      if (err) {
+        return res.status(500).send('Error al obtener usuarios.');
+      }
+      res.status(200).json(result);
+    });
+  });
+  // auth.controller.js
+// Ruta para guardar el usuario que inicia sesión con Facebook
+app.post('/facebook-login', (req, res) => {
+    console.log(req.body); // Verifica los datos recibidos en el servidor
+    const { id, name, email } = req.body;
+  
+    // Preparamos la consulta SQL para insertar el usuario en la base de datos
+    const sql = 'INSERT INTO UsuarioFacebook (id, nombre, email) VALUES (?, ?, ?)';
+  
+    // Ejecutamos la consulta
+    conexion.query(sql, [id, name, email], (error, results) => {
+      if (error) {
+        console.error('Error al guardar el usuario:', error.message);  // Más detalles del error
+        return res.status(500).json({ message: 'Error al guardar el usuario', error: error.message });
+      }
+  
+      res.status(201).json({ message: 'Usuario guardado', user: { id, name, email } });
+    });
+});
+// Ruta para obtener los datos del usuario por su id
+app.get('/user/:id', (req, res) => {
+    const userId = req.params.id;
+
+    // Consulta SQL para obtener los datos del usuario por su id
+    const sql = 'SELECT id, nombre, email FROM Usuario WHERE id = ?';
+
+    // Ejecuta la consulta
+    conexion.query(sql, [userId], (error, results) => {
+        if (error) {
+            console.error('Error al obtener los datos del usuario:', error);
+            return res.status(500).json({ message: 'Error al obtener los datos del usuario', error });
+        }
+
+        // Si el usuario no existe, devolver un error
+        if (results.length === 0) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        // Si todo está bien, devolver los datos del usuario
+        res.status(200).json(results[0]);
+    });
+});
+// backend.js (Node.js con Express)
+app.get('/profile/:id', (req, res) => {
+    const userId = req.params.id;
+  
+    const sql = 'SELECT id, nombre, email FROM Usuario WHERE id = ?';
+    connection.query(sql, [userId], (error, results) => {
+      if (error) {
+        console.error('Error al obtener el usuario:', error);
+        return res.status(500).json({ message: 'Error al obtener los datos del perfil' });
+      }
+  
+      if (results.length > 0) {
+        res.json(results[0]); // Devuelve el primer resultado (el perfil del usuario)
+      } else {
+        res.status(404).json({ message: 'Usuario no encontrado' });
+      }
+    });
+  });
