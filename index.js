@@ -42,7 +42,7 @@ const conexion = mysql.createConnection(
 
         host: 'junction.proxy.rlwy.net',
         //nombre de la base de datos
-        database: 'proyecto',
+        database: 'railway',
         //credenciales de mysql
         user:'root',
         password:'fnWqiRLIsFfyhrUzulEvxrsTQXQsAKWf',
