@@ -56,10 +56,17 @@ app.listen(PUERTO, () => {
 })
 
 //Verificar que la conexión sea exitosa
-conexion.connect(error =>{
-    if (error){ throw new Error(error.message)}
-    console.log('Conexión exitosa a la BD')
-})
+try {
+    conexion.connect(error => {
+        if (error) {
+            throw new Error(error.message); // Lanza el error para que sea capturado por el catch
+        }
+        console.log('Conexión exitosa a la BD');
+    });
+} catch (error) {
+    console.error('Error al conectar con la base de datos:', error.message);
+}
+
 
 //End point para obtener todos los agencias
 app.get('/agencias',(req,res) => {
